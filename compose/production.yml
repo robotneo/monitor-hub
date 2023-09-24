@@ -1,7 +1,8 @@
 # docker compose -f compose.yml -f production.yml up -d
-
 services:
   prometheus:
+    #container_name: prometheus
+    #hostname: prometheus
     image: prom/prometheus:latest
     user: root
     volumes:
@@ -20,10 +21,12 @@ services:
       - "--web.enable-lifecycle"
     privileged: true
     networks:
-      - monitor
+      - promnet
     restart: always
 
   grafana:
+    container_name: grafana
+    hostname: grafana
     image: grafana/grafana:latest
     user: root
     volumes:
@@ -36,10 +39,12 @@ services:
       - prometheus
     privileged: true
     networks:
-      - monitor
+      - promnet
     restart: always
 
   alertmanager:
+    # container_name: alertmanager
+    # hostname: alertmanager
     image: prom/alertmanager:latest
     user: root
     volumes:
@@ -53,10 +58,12 @@ services:
       - "--storage.path=/var/lib/alertmanager"
     privileged: true
     networks:
-      - monitor
+      - promnet
     restart: always
   
   prometheusalert-center:
+    # container_name: prometheusalert-center
+    # hostname: prometheusalert-center
     image: feiyu563/prometheus-alert:latest
     user: root
     volumes:
@@ -69,10 +76,12 @@ services:
       - alertmanager
     privileged: true
     networks:
-      - monitor
+      - promnet
     restart: always
 
   vmware_exporter:
+    # container_name: vmware_exporter
+    # hostname: vmware_exporter
     image: pryorda/vmware_exporter:latest
     user: root
     ports:
@@ -84,9 +93,14 @@ services:
     command: ["-c","/etc/config.yml"]
     privileged: true
     networks:
-      - monitor
+      - promnet
     restart: always
 
 networks:
-  monitor:
+  promnet:
+    # 定义network的名称
+    name: monitor
+    # 默认使用bridge单个主机上的网络，overlay代表跨多个节点的网络群
     driver: bridge
+    #external: true
+      

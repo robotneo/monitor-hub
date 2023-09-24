@@ -19,7 +19,7 @@ services:
       - "--web.enable-lifecycle"
     privileged: true
     networks:
-      - monitor
+      - default
     restart: always
 
   grafana:
@@ -35,7 +35,7 @@ services:
       - prometheus
     privileged: true
     networks:
-      - monitor
+      - default
     restart: always
 
   alertmanager:
@@ -52,7 +52,7 @@ services:
       - "--storage.path=/var/lib/alertmanager"
     privileged: true
     networks:
-      - monitor
+      - default
     restart: always
   
   prometheusalert-center:
@@ -68,7 +68,7 @@ services:
       - alertmanager
     privileged: true
     networks:
-      - monitor
+      - default
     restart: always
 
   vmware_exporter:
@@ -83,12 +83,16 @@ services:
     command: ["-c","/etc/config.yml"]
     privileged: true
     networks:
-      - monitor
+      - default
     restart: always
 
 networks:
-  monitor:
-    driver: bridge
+  default:
+    # 定义network的名称
+    name: monitor
+    # 默认使用bridge单个主机上的网络，overlay代表跨多个节点的网络群
+    # driver: bridge
+    #external: true
 
 volumes:  # 路径 /var/lib/docker/volumes 
   prometheus_data:
