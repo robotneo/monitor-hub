@@ -1,0 +1,14 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['instance']
+  group_wait: 10m
+  group_interval: 10s
+  repeat_interval: 10m
+  receiver: 'web.hook.prometheusalert'
+
+receivers:
+- name: 'web.hook.prometheusalert'
+  webhook_configs:
+  - url: 'http://172.17.40.5:8080/prometheusalert?type=dd&tpl=prometheus-dd&ddurl=https://oapi.dingtalk.com/robot/send?access_token=xxxxxxxxxxxxxxxxxxxxxx&at=18888888888'

@@ -1,0 +1,97 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    user: root
+    volumes:
+      - prometheus_data:/prometheus
+      - /opt/prometheus/conf/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - /opt/prometheus/rules:/prometheus/rules
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "9090:9090"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      - "--storage.tsdb.retention.time=720h"
+      - "--web.enable-admin-api"
+      - "--web.enable-lifecycle"
+    privileged: true
+    networks:
+      - monitor
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    user: root
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - /etc/localtime:/etc/localtime:ro
+      #- /opt/grafana/etc:/etc/grafana
+    ports:
+      - "3000:3000"
+    depends_on:  
+      - prometheus
+    privileged: true
+    networks:
+      - monitor
+    restart: always
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    user: root
+    volumes:
+      - alertmanager_data:/var/lib/alertmanager
+      - /opt/alertmanager/conf/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "9093:9093"
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/var/lib/alertmanager"
+    privileged: true
+    networks:
+      - monitor
+    restart: always
+  
+  prometheusalert-center:
+    image: feiyu563/prometheus-alert:latest
+    user: root
+    volumes:
+      - prometheusalert_date:/app/db
+      - /opt/prometheusalert-center/conf/app.conf:/app/conf/app.conf:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "8080:8080"
+    depends_on:  
+      - alertmanager
+    privileged: true
+    networks:
+      - monitor
+    restart: always
+
+  vmware_exporter:
+    image: pryorda/vmware_exporter:latest
+    user: root
+    ports:
+      - "9272:9272"
+    volumes:
+      - /opt/vmware/config.yml:/etc/config.yml:ro
+      - /etc/localtime:/etc/localtime:ro
+    #command: ["-l","DEBUG"]
+    command: ["-c","/etc/config.yml"]
+    privileged: true
+    networks:
+      - monitor
+    restart: always
+
+networks:
+  monitor:
+    driver: bridge
+
+volumes:  # 路径 /var/lib/docker/volumes 
+  prometheus_data:
+  grafana_data:
+  alertmanager_data:
+  prometheusalert_date:

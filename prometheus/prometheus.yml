@@ -1,0 +1,42 @@
+# 全局配置文件
+global:
+  scrape_interval: 15s  # 设置数据采集间隔每次15s，默认1分钟
+  evaluation_interval: 15s  # 评估规则每次15s，默认1分钟，该设置是针对告警规则rule_files
+  scrape_timeout: 10s # 采集超时，默认10s
+  external_labels:
+    monitor: "monitor-center"
+
+# 告警插件配置
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - 172.17.40.5:9093  # docker宿主机IP
+
+# 按照设定参数进行扫描加载，用于自定义报警规则，其报警媒介和route路由由alertmanager插件实现
+rule_files:
+  - "/prometheus/rules/*.yml"
+
+# 设定采集对象，这里既有静态设置也有设置服务发现（服务发现用于后续target更改只需要进行规则修改即可，不需要进行prometheus守护进程重启）
+scrape_configs:
+  - job_name: "prometheus"
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets: ["172.17.40.5:9090"]   # docker宿主机IP
+  
+  # 采集vCenter管理的主机信息
+  - job_name: "vmware_vcenter"
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets:
+        # - 'vcenter.company.com'
+        - 172.17.41.1   # vCenter管理IP
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 172.17.40.5:9272  # vmware_exporter暴露的IP和端口

@@ -1,0 +1,46 @@
+groups:
+    - name: EXSi主机状态监控告警
+      rules:
+      - alert: EXSi主机状态
+        expr: vmware_host_power_state ==0
+        for: 5m
+        labels:
+          type: lost
+          severity: fatal
+        annotations:
+          summary: "EXSi主机 {{$labels.host_name}} 失联"
+          description: "EXSi任务 {{$labels.job}} 下的主机 {{$labels.host_name}} 已经超过五分钟没有数据了."
+          # monitor_url: "http://10.0.10.120:3000/d/q1yCDNbWz/vmware-stats?orgId=1"
+ 
+      - alert: EXSi主机CPU使用情况
+        expr: (vmware_host_cpu_usage / vmware_host_cpu_max) * 100 >80
+        for: 5m
+        labels:
+          type: cpu
+          severity: warning
+        annotations:
+          summary: "EXSi主机 {{ $labels.host_name }} 的 CPU 使用率告警"
+          description: "EXSi主机 {{ $labels.host_name }} CPU 使用率超过 80%, 当前值为： {{ $value }}"
+          # monitor_url: "http://10.0.10.120:3000/d/q1yCDNbWz/vmware-stats?orgId=1"
+ 
+      - alert: EXSi主机内存使用
+        expr: (vmware_host_memory_usage/ vmware_host_memory_max) * 100 >85
+        for: 5m
+        labels:
+          type: mem
+          severity: warning
+        annotations:
+          summary: "EXSi主机 {{ $labels.host_name }} 的内存使用率告警"
+          description: "EXSi主机 {{ $labels.host_name }} 的内存使用率超过 85%, 当前值为： {{ $value }}"
+          # monitor_url: "http://10.0.10.120:3000/d/q1yCDNbWz/vmware-stats?orgId=1"
+ 
+      - alert: EXSi主机磁盘容量
+        expr: ((vmware_datastore_capacity_size- vmware_datastore_freespace_size) / vmware_datastore_capacity_size) * 100  >70
+        for: 5m
+        labels:
+          type: cpu
+          severity: warning
+        annotations:
+          summary: "EXSi主机 {{ $labels.host_name }} 的磁盘使用率告警"
+          description: "EXSi主机 {{ $labels.host_name }} 的磁盘使用率超过 70%, 挂载点: {{ $labels.mountpoint }} 当前值为：{{ $value }}%"
+          # monitor_url: "http://10.0.10.120:3000/d/q1yCDNbWz/vmware-stats?orgId=1"
