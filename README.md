@@ -22,7 +22,7 @@
 
 #### Prometheus
 
-- Prometheus 服务作为从 docker.io 拉取的容器运行。
+- Prometheus 服务作为从 quay.io（红帽提供）拉取的容器运行。
 - 该服务将侦听端口 9090。
 - Prometheus 服务的配置位于该 prometheus 目录中，确保在运行之前将其复制到服务器上的 /opt/prometheus/conf
 
@@ -45,7 +45,7 @@ wget https://raw.githubusercontent.com/robotneo/prometheus-everything/main/prome
 
 #### Alertmanager
 
-- Alertmanager 服务作为从 docker.io 拉取的容器运行。
+- Alertmanager 服务作为从 quay.io（红帽提供）拉取的容器运行。
 - 该服务将侦听端口 9093。
 - Alertmanager 服务器的配置位于该 alertmanager 目录中，确保在运行之前将其复制到服务器上的 /opt/alertmanager/conf
 
@@ -80,6 +80,16 @@ wget https://raw.githubusercontent.com/robotneo/prometheus-everything/main/alert
 ```bash
 wget https://raw.githubusercontent.com/robotneo/prometheus-everything/main/vmware/config.yml -O /opt/vmware/config.yml
 ```
+
+#### blackbox_exporter
+
+- blackbox_exporter 服务作为从 quay.io（红帽提供） 拉取的容器运行。
+- 该服务将侦听端口 9115。
+- blackbox_exporter 服务的配置位于该 blackbox 目录中，确保在运行之前将其复制到服务器上的 /opt/blackbox
+
+ > 查看配置文件说明请查看：https://github.com/prometheus/blackbox_exporter
+
+
 
 ### 运行启动
 

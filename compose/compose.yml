@@ -1,6 +1,6 @@
 services:
   prometheus:
-    image: prom/prometheus:latest
+    image: quay.io/prometheus/prometheus:latest
     user: root
     volumes:
       - prometheus_data:/prometheus
@@ -23,7 +23,7 @@ services:
     restart: always
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana-enterprise:latest
     user: root
     volumes:
       - grafana_data:/var/lib/grafana
@@ -39,7 +39,7 @@ services:
     restart: always
 
   alertmanager:
-    image: prom/alertmanager:latest
+    image: quay.io/prometheus/alertmanager:latest
     user: root
     volumes:
       - alertmanager_data:/var/lib/alertmanager
@@ -81,6 +81,21 @@ services:
       - /etc/localtime:/etc/localtime:ro
     #command: ["-l","DEBUG"]
     command: ["-c","/etc/config.yml"]
+    privileged: true
+    networks:
+      - default
+    restart: always
+  
+  blackbox_exporter:
+    image: quay.io/prometheus/blackbox-exporter:latest
+    user: root
+    ports:
+      - "9115:9115"
+    volumes:
+      - /opt/blackbox-exporter/blackbox.yml:/config/blackbox.yml:ro
+      - /etc/localtime:/etc/localtime:ro
+    command: 
+      - "--config.file=/config/blackbox.yml"
     privileged: true
     networks:
       - default
