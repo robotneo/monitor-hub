@@ -1,0 +1,38 @@
+# prom demo环境部署
+services:
+  prometheus:
+    #container_name: prometheus
+    #hostname: prometheus
+    image: quay.io/prometheus/prometheus:latest
+    user: root
+    volumes:
+      - /opt/prometheus/data:/prometheus/data
+      - /opt/prometheus/rules:/prometheus/rules
+      - /opt/prometheus/targets:/prometheus/targets
+      - /opt/prometheus/conf/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "9090:9090"
+    extra_hosts:
+      - "demo-service-0:172.17.40.5"
+      - "demo-service-1:172.17.40.5"
+      - "demo-service-2:172.17.40.5"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus/data"
+      - "--storage.tsdb.retention.time=90d"
+      - "--enable-feature=remote-write-receiver"
+      - "--web.enable-admin-api"
+      - "--web.enable-lifecycle"
+    privileged: true
+    networks:
+      - promnet
+    restart: always
+
+networks:
+  promnet:
+    # 定义network的名称
+    name: monitor
+    # 默认使用bridge单个主机上的网络，overlay代表跨多个节点的网络群
+    driver: bridge
+    #external: true

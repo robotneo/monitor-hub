@@ -1,22 +1,24 @@
 # docker compose -f compose.yml -f production.yml up -d
+# compose.yml
 services:
   prometheus:
     #container_name: prometheus
     #hostname: prometheus
-    image: prom/prometheus:latest
+    image: quay.io/prometheus/prometheus:latest
     user: root
     volumes:
-      - /opt/prometheus:/prometheus
+      - /opt/prometheus/data:/prometheus/data
+      - /opt/prometheus/rules:/prometheus/rules
+      - /opt/prometheus/targets:/prometheus/targets
       - /opt/prometheus/conf/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
       - "9090:9090"
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus"
-      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
-      - "--web.console.templates=/usr/share/prometheus/consoles"
-      - "--storage.tsdb.retention.time=720h"
+      - "--storage.tsdb.path=/prometheus/data"
+      - "--storage.tsdb.retention.time=90d"
+      - "--enable-feature=remote-write-receiver"
       - "--web.enable-admin-api"
       - "--web.enable-lifecycle"
     privileged: true
@@ -25,8 +27,8 @@ services:
     restart: always
 
   grafana:
-    container_name: grafana
-    hostname: grafana
+    #container_name: grafana
+    #hostname: grafana
     image: grafana/grafana:latest
     user: root
     volumes:
@@ -45,7 +47,7 @@ services:
   alertmanager:
     # container_name: alertmanager
     # hostname: alertmanager
-    image: prom/alertmanager:latest
+    image: quay.io/prometheus/alertmanager:latest
     user: root
     volumes:
       - /opt/alertmanager/data:/var/lib/alertmanager
