@@ -1,0 +1,10 @@
+services:
+  vmware-exporter:
+    image: ${VMWARE_EXPORTER_IMAGE:?set VMWARE_EXPORTER_IMAGE to an exact tag or digest}
+    command: ["-c", "/etc/vmware-exporter/config.yml"]
+    ports:
+      - "${VMWARE_EXPORTER_PORT:-9272}:9272"
+    volumes:
+      - ${MH_CONFIG_DIR}/vmware-exporter/config.yml:/etc/vmware-exporter/config.yml:ro
+      - ${MH_DATA_DIR}/vmware-exporter:/var/lib/vmware-exporter
+    restart: unless-stopped

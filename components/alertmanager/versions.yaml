@@ -1,0 +1,9 @@
+release_source: github
+repository: prometheus/alertmanager
+tag_transform:
+  strip_prefix: v
+artifacts: []
+images:
+  - name: alertmanager
+    repository: quay.io/prometheus/alertmanager
+compatibility: []

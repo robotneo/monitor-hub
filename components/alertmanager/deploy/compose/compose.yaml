@@ -1,0 +1,12 @@
+services:
+  alertmanager:
+    image: ${ALERTMANAGER_IMAGE:?set ALERTMANAGER_IMAGE to an exact tag or digest}
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+    ports:
+      - "${ALERTMANAGER_PORT:-9093}:9093"
+    volumes:
+      - ${MH_CONFIG_DIR}/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ${MH_DATA_DIR}/alertmanager:/alertmanager
+    restart: unless-stopped

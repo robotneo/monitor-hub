@@ -1,0 +1,31 @@
+groups:
+  - name: esxi-host-health
+    rules:
+      - alert: EsxiHostUnavailable
+        expr: vmware_host_power_state == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "ESXi host {{ $labels.host_name }} is unavailable"
+      - alert: EsxiHostHighCpu
+        expr: (vmware_host_cpu_usage / vmware_host_cpu_max) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "ESXi host {{ $labels.host_name }} CPU usage is high"
+      - alert: EsxiHostHighMemory
+        expr: (vmware_host_memory_usage / vmware_host_memory_max) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "ESXi host {{ $labels.host_name }} memory usage is high"
+      - alert: EsxiDatastoreHighUsage
+        expr: ((vmware_datastore_capacity_size - vmware_datastore_freespace_size) / vmware_datastore_capacity_size) * 100 > 70
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "ESXi datastore usage is high"

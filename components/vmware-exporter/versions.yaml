@@ -1,0 +1,9 @@
+release_source: github
+repository: pryorda/vmware_exporter
+tag_transform:
+  strip_prefix: v
+artifacts: []
+images:
+  - name: vmware-exporter
+    repository: pryorda/vmware_exporter
+compatibility: []

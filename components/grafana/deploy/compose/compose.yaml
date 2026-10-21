@@ -1,0 +1,14 @@
+services:
+  grafana:
+    image: ${GRAFANA_IMAGE:?set GRAFANA_IMAGE to an exact tag or digest}
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_admin_password
+      GRAFANA_DATASOURCE_URL: ${GRAFANA_DATASOURCE_URL:-http://victoriametrics:8428}
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - ${MH_CONFIG_DIR}/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ${MH_CONFIG_DIR}/grafana/secrets/admin-password:/run/secrets/grafana_admin_password:ro
+      - ${MH_DATA_DIR}/grafana:/var/lib/grafana
+    restart: unless-stopped

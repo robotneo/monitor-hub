@@ -1,0 +1,16 @@
+services:
+  prometheus:
+    image: ${PROMETHEUS_IMAGE:?set PROMETHEUS_IMAGE to an exact tag or digest}
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-30d}
+      - --web.enable-lifecycle
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ${MH_CONFIG_DIR}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ${MH_CONFIG_DIR}/prometheus/rules:/etc/prometheus/rules:ro
+      - ${MH_CONFIG_DIR}/prometheus/targets:/etc/prometheus/targets:ro
+      - ${MH_DATA_DIR}/prometheus:/prometheus
+    restart: unless-stopped

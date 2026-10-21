@@ -1,0 +1,9 @@
+release_source: github
+repository: prometheus/blackbox_exporter
+tag_transform:
+  strip_prefix: v
+artifacts: []
+images:
+  - name: blackbox-exporter
+    repository: quay.io/prometheus/blackbox-exporter
+compatibility: []

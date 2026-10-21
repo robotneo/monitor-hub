@@ -1,0 +1,11 @@
+services:
+  blackbox-exporter:
+    image: ${BLACKBOX_EXPORTER_IMAGE:?set BLACKBOX_EXPORTER_IMAGE to an exact tag or digest}
+    command:
+      - --config.file=/config/blackbox.yml
+    ports:
+      - "${BLACKBOX_EXPORTER_PORT:-9115}:9115"
+    volumes:
+      - ${MH_CONFIG_DIR}/blackbox-exporter/blackbox.yml:/config/blackbox.yml:ro
+      - ${MH_DATA_DIR}/blackbox-exporter:/var/lib/blackbox-exporter
+    restart: unless-stopped

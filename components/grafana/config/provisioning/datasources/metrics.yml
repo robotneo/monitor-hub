@@ -1,0 +1,9 @@
+apiVersion: 1
+datasources:
+  - name: Metrics
+    uid: metrics
+    type: prometheus
+    access: proxy
+    url: ${GRAFANA_DATASOURCE_URL}
+    isDefault: true
+    editable: false

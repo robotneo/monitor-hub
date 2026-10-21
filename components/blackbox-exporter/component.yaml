@@ -1,0 +1,20 @@
+name: blackbox-exporter
+kind: exporter
+upstream:
+  repository: https://github.com/prometheus/blackbox_exporter
+  documentation: https://github.com/prometheus/blackbox_exporter/blob/master/README.md
+support:
+  level: preview
+ports:
+  - name: http
+    port: 9115
+    protocol: tcp
+paths:
+  config: /etc/monitor-hub/blackbox-exporter
+  data: /var/lib/monitor-hub/blackbox-exporter
+platforms: [ubuntu-22.04, ubuntu-24.04, rocky-8, rocky-9]
+architectures: [amd64, arm64]
+modes: [compose]
+healthcheck:
+  type: http
+  target: http://127.0.0.1:9115/-/healthy
