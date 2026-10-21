@@ -1,0 +1,32 @@
+name: compose-smoke
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'components/**'
+      - 'stacks/**'
+      - 'lib/**'
+      - 'bin/**'
+      - 'tools/dev/compose-smoke.sh'
+
+permissions:
+  contents: read
+
+jobs:
+  single-node:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        stack:
+          - victoriametrics-monitoring
+          - nightingale-monitoring
+          - hybrid-monitoring
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Run controlled Compose lifecycle
+        run: tools/dev/compose-smoke.sh "${{ matrix.stack }}"

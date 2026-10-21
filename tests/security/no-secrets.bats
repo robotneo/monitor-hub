@@ -31,8 +31,8 @@ setup() {
 }
 
 @test "PrometheusAlert configuration is not tracked" {
-  run find alert -type f -print
-
+  [ ! -e alert ]
+  run find . -path './.git' -prune -o -type f -iname '*prometheusalert*' -print
   [ "${status}" -eq 0 ]
   [ -z "${output}" ]
 }
