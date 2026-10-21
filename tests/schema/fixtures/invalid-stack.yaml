@@ -1,0 +1,15 @@
+name: invalid-monitoring
+support:
+  level: preview
+components:
+  - name: victoriametrics
+    profiles:
+      - missing-profile
+supporting_services: []
+dependency_order:
+  - victoriametrics
+profiles:
+  single-node:
+    description: Only valid profile.
+modes:
+  - compose

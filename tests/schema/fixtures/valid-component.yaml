@@ -1,0 +1,25 @@
+name: node-exporter
+kind: exporter
+upstream:
+  repository: https://github.com/prometheus/node_exporter
+support:
+  level: preview
+ports:
+  - name: metrics
+    port: 9100
+    protocol: tcp
+paths:
+  config: /etc/monitor-hub/node-exporter
+  data: /var/lib/monitor-hub/node-exporter
+platforms:
+  - ubuntu-22.04
+  - rocky-9
+architectures:
+  - amd64
+  - arm64
+modes:
+  - native
+  - compose
+healthcheck:
+  type: http
+  target: http://127.0.0.1:9100/metrics

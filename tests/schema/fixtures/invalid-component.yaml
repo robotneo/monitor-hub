@@ -1,0 +1,13 @@
+upstream:
+  repository: https://example.invalid/missing-metadata
+ports: []
+paths: {}
+platforms:
+  - ubuntu-22.04
+architectures:
+  - amd64
+modes:
+  - magic-installer
+healthcheck:
+  type: http
+  target: http://127.0.0.1:9999/health

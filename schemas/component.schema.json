@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://robotneo.github.io/monitor-hub/schemas/component.schema.json",
+  "title": "monitor-hub component metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name", "kind", "upstream", "support", "ports", "paths",
+    "platforms", "architectures", "modes", "healthcheck"
+  ],
+  "properties": {
+    "name": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "kind": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository"],
+      "properties": {
+        "repository": {"type": "string", "format": "uri"},
+        "documentation": {"type": "string", "format": "uri"}
+      }
+    },
+    "support": {"$ref": "#/$defs/support"},
+    "ports": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "port", "protocol"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "port": {"type": "integer", "minimum": 1, "maximum": 65535},
+          "protocol": {"enum": ["tcp", "udp"]}
+        }
+      }
+    },
+    "paths": {
+      "type": "object",
+      "additionalProperties": {"type": "string", "pattern": "^/"}
+    },
+    "platforms": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"enum": ["ubuntu-22.04", "ubuntu-24.04", "rocky-8", "rocky-9"]}
+    },
+    "architectures": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"enum": ["amd64", "arm64"]}
+    },
+    "modes": {"$ref": "#/$defs/modes"},
+    "healthcheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "target"],
+      "properties": {
+        "type": {"enum": ["http", "tcp", "command"]},
+        "target": {"type": "string", "minLength": 1}
+      }
+    }
+  },
+  "$defs": {
+    "support": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level"],
+      "properties": {
+        "level": {"enum": ["experimental", "preview", "supported"]},
+        "notes": {"type": "string"}
+      }
+    },
+    "modes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"enum": ["native", "docker", "compose", "kubernetes"]}
+    }
+  }
+}
