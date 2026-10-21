@@ -1,0 +1,12 @@
+# Copy this file to the protected runtime config path documented in README.md.
+# Never commit the rendered file.
+default:
+  vsphere_host:
+  vsphere_user:
+  vsphere_password:
+  ignore_ssl: false
+  collect_only:
+    vms: true
+    vmguests: true
+    datastores: true
+    hosts: true

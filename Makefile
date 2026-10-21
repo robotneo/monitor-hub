@@ -11,7 +11,7 @@ validate-schema: bootstrap
 lint: lint-shell
 
 lint-shell: bootstrap
-	.tools/shellcheck-v0.11.0/shellcheck bin/monitorctl lib/core/*.sh lib/adapters/*.sh components/*/hooks/*.sh
+	.tools/shellcheck-v0.11.0/shellcheck bin/monitorctl lib/core/*.sh lib/adapters/*.sh components/*/hooks/*.sh stacks/*/hooks/*.sh
 
 test: bootstrap
-	.tools/bats/bin/bats tests/security tests/schema tests/unit tests/cli tests/components
+	.tools/bats/bin/bats tests/security tests/schema tests/unit tests/cli tests/components stacks/*/tests

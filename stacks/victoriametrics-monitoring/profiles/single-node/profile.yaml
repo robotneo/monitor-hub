@@ -1,0 +1,8 @@
+name: single-node
+stack: victoriametrics-monitoring
+mode: compose
+description: One VictoriaMetrics node with vmagent, vmalert, Alertmanager, Grafana and exporters.
+optional_features:
+  - vmware
+published_services:
+  - grafana

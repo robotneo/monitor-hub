@@ -1,0 +1,35 @@
+name: victoriametrics-monitoring
+support:
+  level: preview
+  notes: Single-node Compose is executable; cluster is documentation-only.
+components:
+  - name: blackbox-exporter
+    profiles: [single-node]
+  - name: vmware-exporter
+    profiles: [single-node]
+  - name: vmagent
+    profiles: [single-node]
+  - name: victoriametrics
+    profiles: [single-node]
+  - name: grafana
+    profiles: [single-node]
+  - name: vmalert
+    profiles: [single-node]
+  - name: alertmanager
+    profiles: [single-node]
+supporting_services: []
+dependency_order:
+  - victoriametrics
+  - blackbox-exporter
+  - vmware-exporter
+  - vmagent
+  - alertmanager
+  - vmalert
+  - grafana
+profiles:
+  single-node:
+    description: Executable single-node Docker Compose deployment.
+  cluster:
+    description: Documentation-only VictoriaMetrics cluster topology.
+modes:
+  - compose

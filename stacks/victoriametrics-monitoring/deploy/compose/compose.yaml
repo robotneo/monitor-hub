@@ -1,0 +1,152 @@
+services:
+  victoriametrics:
+    image: ${VICTORIAMETRICS_IMAGE:?set VICTORIAMETRICS_IMAGE to an exact tag or digest}
+    user: "1000:1000"
+    command:
+      - -storageDataPath=/storage
+      - -retentionPeriod=${VICTORIAMETRICS_RETENTION:-30d}
+      - -httpListenAddr=:8428
+    expose: ["8428"]
+    volumes:
+      - ${MH_DATA_DIR}/stacks/victoriametrics-monitoring/victoriametrics:/storage
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8428/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+
+  blackbox-exporter:
+    image: ${BLACKBOX_EXPORTER_IMAGE:?set BLACKBOX_EXPORTER_IMAGE to an exact tag or digest}
+    user: "65534:65534"
+    command: ["--config.file=/config/blackbox.yml"]
+    expose: ["9115"]
+    volumes:
+      - ${MH_CONFIG_DIR}/stacks/victoriametrics-monitoring/blackbox-exporter/blackbox.yml:/config/blackbox.yml:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:9115/-/healthy"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    cap_drop: ["ALL"]
+    cap_add: ["NET_RAW"]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    restart: unless-stopped
+
+  vmware-exporter:
+    image: ${VMWARE_EXPORTER_IMAGE:?set VMWARE_EXPORTER_IMAGE to an exact tag or digest}
+    profiles: ["vmware"]
+    user: "65534:65534"
+    command: ["-c", "/etc/vmware-exporter/config.yml"]
+    expose: ["9272"]
+    volumes:
+      - ${VMWARE_CONFIG_FILE:?set VMWARE_CONFIG_FILE to the protected runtime file}:/etc/vmware-exporter/config.yml:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:9272/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    restart: unless-stopped
+
+  vmagent:
+    image: ${VMAGENT_IMAGE:?set VMAGENT_IMAGE to an exact tag or digest}
+    user: "1000:1000"
+    command:
+      - -promscrape.config=/etc/vmagent/prometheus.yml
+      - -remoteWrite.url=http://victoriametrics:8428/api/v1/write
+      - -remoteWrite.tmpDataPath=/vmagent-remotewrite-data
+    expose: ["8429"]
+    volumes:
+      - ${MH_CONFIG_DIR}/stacks/victoriametrics-monitoring/vmagent/${VMAGENT_CONFIG_FILE:-prometheus.yml}:/etc/vmagent/prometheus.yml:ro
+      - ${MH_DATA_DIR}/stacks/victoriametrics-monitoring/vmagent:/vmagent-remotewrite-data
+    depends_on:
+      victoriametrics:
+        condition: service_healthy
+      blackbox-exporter:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8429/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+
+  alertmanager:
+    image: ${ALERTMANAGER_IMAGE:?set ALERTMANAGER_IMAGE to an exact tag or digest}
+    user: "65534:65534"
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+    expose: ["9093"]
+    volumes:
+      - ${MH_CONFIG_DIR}/stacks/victoriametrics-monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ${MH_DATA_DIR}/stacks/victoriametrics-monitoring/alertmanager:/alertmanager
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:9093/-/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+
+  vmalert:
+    image: ${VMALERT_IMAGE:?set VMALERT_IMAGE to an exact tag or digest}
+    user: "1000:1000"
+    command:
+      - -datasource.url=http://victoriametrics:8428
+      - -remoteRead.url=http://victoriametrics:8428
+      - -remoteWrite.url=http://victoriametrics:8428/api/v1/write
+      - -notifier.url=http://alertmanager:9093
+      - -rule=/etc/vmalert/rules/*.yml
+    expose: ["8880"]
+    volumes:
+      - ${MH_CONFIG_DIR}/stacks/victoriametrics-monitoring/vmalert/rules:/etc/vmalert/rules:ro
+    depends_on:
+      victoriametrics:
+        condition: service_healthy
+      alertmanager:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8880/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    restart: unless-stopped
+
+  grafana:
+    image: ${GRAFANA_IMAGE:?set GRAFANA_IMAGE to an exact tag or digest}
+    user: "472:472"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_admin_password
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - ${MH_CONFIG_DIR}/stacks/victoriametrics-monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ${MH_CONFIG_DIR}/stacks/victoriametrics-monitoring/secrets/grafana-admin-password:/run/secrets/grafana_admin_password:ro
+      - ${MH_DATA_DIR}/stacks/victoriametrics-monitoring/grafana:/var/lib/grafana
+    depends_on:
+      victoriametrics:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    tmpfs: ["/tmp"]
+    restart: unless-stopped

@@ -1,0 +1,10 @@
+groups:
+  - name: monitor-hub-self-monitoring
+    rules:
+      - alert: ScrapeTargetDown
+        expr: up == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Scrape target {{ $labels.instance }} is down"
