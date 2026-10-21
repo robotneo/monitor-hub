@@ -1,5 +1,7 @@
 # Monitor Hub Repository Design
 
+[English](2026-10-21-monitor-hub-repository-design.md) | [中文](2026-10-21-monitor-hub-repository-design.zh-CN.md)
+
 **Status:** Approved conversational design; awaiting written-spec review  
 **Date:** 2026-10-21  
 **Repository:** `robotneo/monitor-hub`
