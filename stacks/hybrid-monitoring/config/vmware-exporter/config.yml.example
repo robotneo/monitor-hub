@@ -1,0 +1,5 @@
+default:
+  vsphere_host:
+  vsphere_user:
+  vsphere_password:
+  ignore_ssl: false

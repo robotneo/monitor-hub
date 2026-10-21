@@ -1,0 +1,23 @@
+[global]
+hostname = ""
+omit_hostname = false
+interval = 15
+
+[global.labels]
+collector = "categraf"
+
+[[writers]]
+url = "http://victoriametrics:8428/api/v1/write"
+timeout = 5000
+
+[heartbeat]
+enable = true
+url = "http://nightingale:17000/v1/n9e/heartbeat"
+interval = 10
+
+[prometheus]
+enable = false
+
+[http]
+enable = true
+address = ":9100"

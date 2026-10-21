@@ -1,0 +1,28 @@
+name: hybrid-monitoring
+support:
+  level: preview
+  notes: Explicit collection ownership prevents duplicate time series.
+components:
+  - name: blackbox-exporter
+    profiles: [single-node]
+  - name: vmware-exporter
+    profiles: [single-node]
+  - name: vmagent
+    profiles: [single-node]
+  - name: categraf
+    profiles: [single-node]
+  - name: nightingale
+    profiles: [single-node]
+  - name: victoriametrics
+    profiles: [single-node]
+  - name: grafana
+    profiles: [single-node]
+supporting_services: [mysql, redis]
+dependency_order: [mysql, redis, victoriametrics, blackbox-exporter, vmware-exporter, vmagent, nightingale, categraf, grafana]
+profiles:
+  single-node:
+    description: Exporter and Categraf hybrid collection with distinct source labels.
+  cluster:
+    description: Documentation-only production topology.
+modes:
+  - compose

@@ -1,0 +1,4 @@
+name: single-node
+stack: nightingale-monitoring
+mode: compose
+published_services: [nightingale, grafana]

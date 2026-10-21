@@ -1,0 +1,5 @@
+name: single-node
+stack: hybrid-monitoring
+mode: compose
+published_services: [nightingale, grafana]
+optional_features: [vmware]

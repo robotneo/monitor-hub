@@ -1,0 +1,13 @@
+[Global]
+RunMode = "release"
+[HTTP]
+Host = "0.0.0.0"
+Port = 17000
+[DB]
+DBType = "mysql"
+DSN = "n9e:__MYSQL_PASSWORD__@tcp(mysql:3306)/n9e_v6?charset=utf8mb4&parseTime=True&loc=Local"
+[Redis]
+Address = "redis:6379"
+RedisType = "standalone"
+[Reader]
+Url = "http://victoriametrics:8428"

@@ -1,0 +1,135 @@
+services:
+  mysql:
+    image: ${MYSQL_IMAGE:?set MYSQL_IMAGE to an exact tag or digest}
+    environment:
+      MYSQL_DATABASE: n9e_v6
+      MYSQL_USER: n9e
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      MYSQL_PASSWORD_FILE: /run/secrets/mysql_password
+    expose: ["3306"]
+    volumes:
+      - ${MH_DATA_DIR}/stacks/hybrid-monitoring/mysql:/var/lib/mysql
+      - ${MH_CONFIG_DIR}/stacks/hybrid-monitoring/secrets/mysql-root-password:/run/secrets/mysql_root_password:ro
+      - ${MH_CONFIG_DIR}/stacks/hybrid-monitoring/secrets/mysql-password:/run/secrets/mysql_password:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot --password=$$(cat /run/secrets/mysql_root_password)"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: ${REDIS_IMAGE:?set REDIS_IMAGE to an exact tag or digest}
+    command: ["redis-server", "--appendonly", "yes"]
+    expose: ["6379"]
+    volumes:
+      - ${MH_DATA_DIR}/stacks/hybrid-monitoring/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  victoriametrics:
+    image: ${VICTORIAMETRICS_IMAGE:?set VICTORIAMETRICS_IMAGE to an exact tag or digest}
+    user: "1000:1000"
+    command: ["-storageDataPath=/storage", "-retentionPeriod=${VICTORIAMETRICS_RETENTION:-30d}"]
+    expose: ["8428"]
+    volumes:
+      - ${MH_DATA_DIR}/stacks/hybrid-monitoring/victoriametrics:/storage
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8428/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  blackbox-exporter:
+    image: ${BLACKBOX_EXPORTER_IMAGE:?set BLACKBOX_EXPORTER_IMAGE to an exact tag or digest}
+    user: "65534:65534"
+    command: ["--config.file=/config/blackbox.yml"]
+    expose: ["9115"]
+    volumes:
+      - ${MH_CONFIG_DIR}/stacks/hybrid-monitoring/blackbox-exporter/blackbox.yml:/config/blackbox.yml:ro
+    cap_drop: ["ALL"]
+    cap_add: ["NET_RAW"]
+    restart: unless-stopped
+
+  vmware-exporter:
+    image: ${VMWARE_EXPORTER_IMAGE:?set VMWARE_EXPORTER_IMAGE to an exact tag or digest}
+    profiles: ["vmware"]
+    user: "65534:65534"
+    command: ["-c", "/etc/vmware-exporter/config.yml"]
+    expose: ["9272"]
+    volumes:
+      - ${VMWARE_CONFIG_FILE:?set VMWARE_CONFIG_FILE to the protected runtime file}:/etc/vmware-exporter/config.yml:ro
+    restart: unless-stopped
+
+  vmagent:
+    image: ${VMAGENT_IMAGE:?set VMAGENT_IMAGE to an exact tag or digest}
+    user: "1000:1000"
+    command:
+      - -promscrape.config=/etc/vmagent/prometheus.yml
+      - -remoteWrite.url=http://victoriametrics:8428/api/v1/write
+      - -remoteWrite.label=collector=vmagent
+      - -remoteWrite.tmpDataPath=/vmagent-remotewrite-data
+    volumes:
+      - ${MH_CONFIG_DIR}/stacks/hybrid-monitoring/vmagent/${VMAGENT_CONFIG_FILE:-prometheus.yml}:/etc/vmagent/prometheus.yml:ro
+      - ${MH_DATA_DIR}/stacks/hybrid-monitoring/vmagent:/vmagent-remotewrite-data
+    depends_on:
+      victoriametrics:
+        condition: service_healthy
+    restart: unless-stopped
+
+  nightingale:
+    image: ${NIGHTINGALE_IMAGE:?set NIGHTINGALE_IMAGE to an exact tag or digest}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      victoriametrics:
+        condition: service_healthy
+    ports:
+      - "${NIGHTINGALE_PORT:-17000}:17000"
+    volumes:
+      - ${MH_CONFIG_DIR}/stacks/hybrid-monitoring/nightingale/config.toml:/app/etc/config.toml:ro
+      - ${MH_DATA_DIR}/stacks/hybrid-monitoring/nightingale:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:17000/api/n9e/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  categraf:
+    image: ${CATEGRAF_IMAGE:?set CATEGRAF_IMAGE to an exact tag or digest}
+    user: "1000:1000"
+    command: ["--configs", "/etc/categraf/conf"]
+    volumes:
+      - ${MH_CONFIG_DIR}/stacks/hybrid-monitoring/categraf:/etc/categraf/conf:ro
+      - ${MH_DATA_DIR}/stacks/hybrid-monitoring/categraf:/var/lib/categraf
+    depends_on:
+      nightingale:
+        condition: service_healthy
+      victoriametrics:
+        condition: service_healthy
+    restart: unless-stopped
+
+  grafana:
+    image: ${GRAFANA_IMAGE:?set GRAFANA_IMAGE to an exact tag or digest}
+    user: "472:472"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_admin_password
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - ${MH_CONFIG_DIR}/stacks/hybrid-monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ${MH_CONFIG_DIR}/stacks/hybrid-monitoring/secrets/grafana-admin-password:/run/secrets/grafana_admin_password:ro
+      - ${MH_DATA_DIR}/stacks/hybrid-monitoring/grafana:/var/lib/grafana
+    depends_on:
+      victoriametrics:
+        condition: service_healthy
+    restart: unless-stopped

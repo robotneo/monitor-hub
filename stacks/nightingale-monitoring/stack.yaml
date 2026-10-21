@@ -1,0 +1,22 @@
+name: nightingale-monitoring
+support:
+  level: preview
+  notes: Single-node Compose is executable; cluster is documentation-only.
+components:
+  - name: categraf
+    profiles: [single-node]
+  - name: nightingale
+    profiles: [single-node]
+  - name: victoriametrics
+    profiles: [single-node]
+  - name: grafana
+    profiles: [single-node]
+supporting_services: [mysql, redis]
+dependency_order: [mysql, redis, victoriametrics, nightingale, categraf, grafana]
+profiles:
+  single-node:
+    description: Executable Categraf, Nightingale, VictoriaMetrics and Grafana stack.
+  cluster:
+    description: Documentation-only production topology.
+modes:
+  - compose
