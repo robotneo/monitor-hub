@@ -1,0 +1,15 @@
+title = "monitor-hub secret scanning policy"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Documented placeholders in example files"
+paths = [
+  '''(^|/)[^/]*\.example(\.[^/]*)?$''',
+  '''(^|/)docs/.*\.md$''',
+]
+regexes = [
+  '''\$\{[A-Z][A-Z0-9_]*\}''',
+  '''<REPLACE_ME>''',
+]

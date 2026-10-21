@@ -1,0 +1,29 @@
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+secrets/
+**/secrets/*
+!**/secrets/README.md
+!**/secrets/*.example
+*.secret
+
+# Local tooling and runtime state
+.tools/
+.superpowers/
+runtime/
+state/
+*.log
+
+# Offline packages are local-only
+packages/*
+!packages/README.md
+*.deb
+*.rpm
+*.tar
+*.tar.gz
+*.tgz
+*.zip
