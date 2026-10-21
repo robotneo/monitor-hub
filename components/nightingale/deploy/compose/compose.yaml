@@ -1,0 +1,13 @@
+services:
+  nightingale:
+    image: ${NIGHTINGALE_IMAGE:?set NIGHTINGALE_IMAGE to an exact tag or digest}
+    environment:
+      NIGHTINGALE_MYSQL_DSN: ${NIGHTINGALE_MYSQL_DSN:?provide MySQL DSN through protected environment}
+      NIGHTINGALE_REDIS_ADDRESS: ${NIGHTINGALE_REDIS_ADDRESS:-redis:6379}
+      NIGHTINGALE_VICTORIAMETRICS_URL: ${NIGHTINGALE_VICTORIAMETRICS_URL:-http://victoriametrics:8428}
+    ports:
+      - "${NIGHTINGALE_PORT:-17000}:17000"
+    volumes:
+      - ${MH_CONFIG_DIR}/nightingale/config.toml:/app/etc/config.toml:ro
+      - ${MH_DATA_DIR}/nightingale:/app/data
+    restart: unless-stopped

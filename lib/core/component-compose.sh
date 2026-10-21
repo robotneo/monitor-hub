@@ -15,7 +15,7 @@ mh_component_compose_context() {
   MH_CONFIG_DIR="${MH_CONFIG_DIR:-/etc/monitor-hub}"
   MH_DATA_DIR="${MH_DATA_DIR:-/var/lib/monitor-hub}"
   export MH_CONFIG_DIR MH_DATA_DIR
-  MH_COMPOSE_FILES="${component_dir}/deploy/compose/compose.yaml"
+  MH_COMPOSE_FILES="${MH_COMPOSE_FILES:-${component_dir}/deploy/compose/compose.yaml}"
   export MH_COMPOSE_FILES
 
   image_value="$(eval "printf '%s' \"\${${image_variable}:-}\"")"

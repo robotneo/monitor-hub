@@ -1,0 +1,9 @@
+release_source: github
+repository: flashcatcloud/categraf
+tag_transform:
+  strip_prefix: v
+artifacts: []
+images:
+  - name: categraf
+    repository: flashcatcloud/categraf
+compatibility: []

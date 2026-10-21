@@ -1,0 +1,20 @@
+name: nightingale
+kind: monitoring-platform
+upstream:
+  repository: https://github.com/ccfos/nightingale
+  documentation: https://flashcat.cloud/docs/content/flashcat-monitor/nightingale-v7/
+support:
+  level: preview
+ports:
+  - name: http
+    port: 17000
+    protocol: tcp
+paths:
+  config: /etc/monitor-hub/nightingale
+  data: /var/lib/monitor-hub/nightingale
+platforms: [ubuntu-22.04, ubuntu-24.04, rocky-8, rocky-9]
+architectures: [amd64, arm64]
+modes: [compose]
+healthcheck:
+  type: http
+  target: http://127.0.0.1:17000/api/n9e/health

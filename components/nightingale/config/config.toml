@@ -1,0 +1,15 @@
+[Global]
+RunMode = "release"
+
+[HTTP]
+Host = "0.0.0.0"
+Port = 17000
+
+[Reader]
+Url = "${NIGHTINGALE_VICTORIAMETRICS_URL}"
+
+[Redis]
+Address = "${NIGHTINGALE_REDIS_ADDRESS}"
+
+[DB]
+DSN = "${NIGHTINGALE_MYSQL_DSN}"

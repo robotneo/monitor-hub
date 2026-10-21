@@ -1,0 +1,9 @@
+release_source: github
+repository: VictoriaMetrics/VictoriaMetrics
+tag_transform:
+  strip_prefix: v
+artifacts: []
+images:
+  - name: victoriametrics
+    repository: victoriametrics/victoria-metrics
+compatibility: []

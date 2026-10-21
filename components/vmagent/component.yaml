@@ -1,0 +1,19 @@
+name: vmagent
+kind: metrics-collector
+upstream:
+  repository: https://github.com/VictoriaMetrics/VictoriaMetrics
+support:
+  level: preview
+ports:
+  - name: http
+    port: 8429
+    protocol: tcp
+paths:
+  config: /etc/monitor-hub/vmagent
+  data: /var/lib/monitor-hub/vmagent
+platforms: [ubuntu-22.04, ubuntu-24.04, rocky-8, rocky-9]
+architectures: [amd64, arm64]
+modes: [compose]
+healthcheck:
+  type: http
+  target: http://127.0.0.1:8429/health

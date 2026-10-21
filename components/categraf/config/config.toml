@@ -1,0 +1,12 @@
+[global]
+hostname = ""
+omit_hostname = false
+interval = 15
+
+[[writers]]
+url = "http://victoriametrics:8428/api/v1/write"
+timeout = 5000
+
+[http]
+enable = true
+address = ":9100"

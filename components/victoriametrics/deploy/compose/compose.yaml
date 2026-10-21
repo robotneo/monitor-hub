@@ -1,0 +1,13 @@
+services:
+  victoriametrics:
+    image: ${VICTORIAMETRICS_IMAGE:?set VICTORIAMETRICS_IMAGE to an exact tag or digest}
+    command:
+      - -storageDataPath=/storage
+      - -retentionPeriod=${VICTORIAMETRICS_RETENTION:-30d}
+      - -httpListenAddr=:8428
+    ports:
+      - "${VICTORIAMETRICS_PORT:-8428}:8428"
+    volumes:
+      - ${MH_CONFIG_DIR}/victoriametrics:/etc/victoriametrics:ro
+      - ${MH_DATA_DIR}/victoriametrics:/storage
+    restart: unless-stopped

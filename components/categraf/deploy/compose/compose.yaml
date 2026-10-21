@@ -1,0 +1,10 @@
+services:
+  categraf:
+    image: ${CATEGRAF_IMAGE:?set CATEGRAF_IMAGE to an exact tag or digest}
+    command: ["--configs", "/etc/categraf/conf"]
+    ports:
+      - "${CATEGRAF_PORT:-9100}:9100"
+    volumes:
+      - ${MH_CONFIG_DIR}/categraf:/etc/categraf/conf:ro
+      - ${MH_DATA_DIR}/categraf:/var/lib/categraf
+    restart: unless-stopped

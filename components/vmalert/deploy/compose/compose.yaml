@@ -1,0 +1,15 @@
+services:
+  vmalert:
+    image: ${VMALERT_IMAGE:?set VMALERT_IMAGE to an exact tag or digest}
+    command:
+      - -datasource.url=http://victoriametrics:8428
+      - -remoteRead.url=http://victoriametrics:8428
+      - -remoteWrite.url=http://victoriametrics:8428/api/v1/write
+      - -notifier.url=http://alertmanager:9093
+      - -rule=/etc/vmalert/rules/*.yml
+    ports:
+      - "${VMALERT_PORT:-8880}:8880"
+    volumes:
+      - ${MH_CONFIG_DIR}/vmalert/rules:/etc/vmalert/rules:ro
+      - ${MH_DATA_DIR}/vmalert:/var/lib/vmalert
+    restart: unless-stopped

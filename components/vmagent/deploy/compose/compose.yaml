@@ -1,0 +1,13 @@
+services:
+  vmagent:
+    image: ${VMAGENT_IMAGE:?set VMAGENT_IMAGE to an exact tag or digest}
+    command:
+      - -promscrape.config=/etc/vmagent/prometheus.yml
+      - -remoteWrite.url=http://victoriametrics:8428/api/v1/write
+      - -remoteWrite.tmpDataPath=/vmagent-remotewrite-data
+    ports:
+      - "${VMAGENT_PORT:-8429}:8429"
+    volumes:
+      - ${MH_CONFIG_DIR}/vmagent/prometheus.yml:/etc/vmagent/prometheus.yml:ro
+      - ${MH_DATA_DIR}/vmagent:/vmagent-remotewrite-data
+    restart: unless-stopped

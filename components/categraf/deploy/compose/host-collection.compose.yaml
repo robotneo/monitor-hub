@@ -1,0 +1,8 @@
+services:
+  categraf:
+    profiles: [host-collection]
+    pid: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/host/root:ro
