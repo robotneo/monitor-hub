@@ -179,9 +179,15 @@ mh_resolve_artifact() {
     version="${requested_version}"
     filename="$(mh_render_artifact_filename "${template}" "${version}" "${os}" "${arch}")"
     path="${packages_dir}/${filename}"
-    [[ -f "${path}" ]] && mh_accept_artifact "${version}" "${path}" packages "${checksum}" && return 0
+    if [[ -f "${path}" ]]; then
+      mh_accept_artifact "${version}" "${path}" packages "${checksum}"
+      return $?
+    fi
     path="${cache_artifacts_dir}/${filename}"
-    [[ -f "${path}" ]] && mh_accept_artifact "${version}" "${path}" cache "${checksum}" && return 0
+    if [[ -f "${path}" ]]; then
+      mh_accept_artifact "${version}" "${path}" cache "${checksum}"
+      return $?
+    fi
   else
     if match="$(mh_find_best_local_artifact "${packages_dir}" "${template}" "${os}" "${arch}")"; then
       version="${match%%|*}"

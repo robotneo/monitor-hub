@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+MH_BIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+MH_REPO_ROOT="${MH_REPO_ROOT:-$(cd "${MH_BIN_DIR}/.." && pwd -P)}"
+export MH_REPO_ROOT
+
+# shellcheck source=lib/core/args.sh disable=SC1091
+source "${MH_REPO_ROOT}/lib/core/args.sh"
+# shellcheck source=lib/core/dispatch.sh disable=SC1091
+source "${MH_REPO_ROOT}/lib/core/dispatch.sh"
+
+mh_parse_args "$@"
+if [[ "${MH_SHOW_HELP}" == "1" ]]; then
+  mh_usage
+  exit 0
+fi
+
+mh_dispatch "${MH_KIND}" "${MH_NAME}" "${MH_ACTION}" "${MH_MODE}" "${MH_PROFILE}"
