@@ -19,7 +19,7 @@ Modes:
 
 Options:
   --profile PROFILE   Required for stack operations
-  --version VERSION   Exact version; default resolves latest stable
+  --version VERSION   Component: exact version; stack: component=version map
   --dry-run           Validate and render without applying changes
   --yes               Disable interactive confirmation only
   --purge-data        Explicitly allow uninstall to remove component data

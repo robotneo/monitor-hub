@@ -8,8 +8,8 @@ and Grafana handles visualization. VMware collection is disabled by default.
 bin/monitorctl stack hybrid-monitoring install --mode compose --profile single-node
 ```
 
-首次登录 Nightingale 后必须立即轮换官方初始化的默认 root 密码。安装过程会在
-受保护目录生成候选密码，MySQL 与 Grafana 则直接使用文件型 secret。
+首次登录 Nightingale 后必须立即轮换官方初始化的默认 root 密码。MySQL 与
+Grafana 使用按服务 UID 限制为只读 `0400` 的文件型 secret。
 
 Read `config/collection-ownership.md` before enabling any overlapping input.
 Uninstall preserves MySQL and VictoriaMetrics data unless purge is explicit.

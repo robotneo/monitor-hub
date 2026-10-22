@@ -12,6 +12,7 @@ setup() {
   mh_init_paths
 
   [ "${MH_CONFIG_DIR}" = "/etc/monitor-hub" ]
+  [ "${MH_DATA_DIR}" = "/var/lib/monitor-hub" ]
   [ "${MH_STATE_DIR}" = "/var/lib/monitor-hub" ]
   [ "${MH_CACHE_DIR}" = "/var/cache/monitor-hub" ]
   [ "${MH_LOG_DIR}" = "/var/log/monitor-hub" ]
@@ -24,9 +25,21 @@ setup() {
   mh_init_paths
 
   [ "${MH_CONFIG_DIR}" = "${MH_ROOT_DIR}/etc/monitor-hub" ]
+  [ "${MH_DATA_DIR}" = "${MH_ROOT_DIR}/var/lib/monitor-hub" ]
   [ "${MH_STATE_DIR}" = "${MH_ROOT_DIR}/var/lib/monitor-hub" ]
   [ "${MH_CACHE_DIR}" = "${MH_ROOT_DIR}/var/cache/monitor-hub" ]
   [ "${MH_LOG_DIR}" = "${MH_ROOT_DIR}/var/log/monitor-hub" ]
   [ "${MH_BACKUP_DIR}" = "${MH_ROOT_DIR}/var/backups/monitor-hub" ]
   [ ! -e "${MH_ROOT_DIR}" ]
+}
+
+@test "explicit runtime path overrides are preserved" {
+  MH_ROOT_DIR="${BATS_TEST_TMPDIR}/root"
+  MH_CONFIG_DIR="${BATS_TEST_TMPDIR}/custom-config"
+  MH_DATA_DIR="${BATS_TEST_TMPDIR}/custom-data"
+
+  mh_init_paths
+
+  [ "${MH_CONFIG_DIR}" = "${BATS_TEST_TMPDIR}/custom-config" ]
+  [ "${MH_DATA_DIR}" = "${BATS_TEST_TMPDIR}/custom-data" ]
 }

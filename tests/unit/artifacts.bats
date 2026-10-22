@@ -167,3 +167,69 @@ assert_state_is_empty() {
   run grep -F 'pull' "${MH_DOCKER_LOG}"
   [ "$status" -ne 0 ]
 }
+
+@test "latest image selection uses the highest local stable tag before GitHub" {
+  write_versions "$(printf 'unused' | shasum -a 256 | awk '{print $1}')"
+  local fake_docker="${BATS_TEST_TMPDIR}/docker"
+  export MH_DOCKER_LOG="${BATS_TEST_TMPDIR}/docker.log"
+  printf '%s\n' \
+    '#!/usr/bin/env bash' \
+    'printf "%s\n" "$*" >> "${MH_DOCKER_LOG}"' \
+    'if [[ "$1 $2" == "image ls" ]]; then printf "%s\n" "1.2.0" "1.3.0-rc.1" "1.1.0"; exit 0; fi' \
+    'if [[ "$1 $2" == "image inspect" ]]; then printf "%s\n" "registry.example/demo@sha256:0123456789abcdef"; exit 0; fi' \
+    'exit 1' > "${fake_docker}"
+  chmod +x "${fake_docker}"
+  export MH_DOCKER_BIN="${fake_docker}"
+  unset MH_GITHUB_RELEASES_FILE
+
+  mh_resolve_image demo latest
+
+  [ "${MH_IMAGE_VERSION}" = "1.2.0" ]
+  [ "${MH_IMAGE_REFERENCE}" = "registry.example/demo:1.2.0" ]
+  run grep -F 'pull' "${MH_DOCKER_LOG}"
+  [ "$status" -ne 0 ]
+}
+
+@test "configured exact tag resolves to an immutable digest" {
+  local fake_docker="${BATS_TEST_TMPDIR}/docker"
+  printf '%s\n' \
+    '#!/usr/bin/env bash' \
+    'if [[ "$1 $2" == "image inspect" ]]; then printf "%s\n" "registry.example/demo@sha256:abcdef"; exit 0; fi' \
+    'exit 1' > "${fake_docker}"
+  chmod +x "${fake_docker}"
+  export MH_DOCKER_BIN="${fake_docker}"
+
+  mh_resolve_image_reference registry.example/demo:1.2.0
+
+  [ "${MH_RESOLVED_IMAGE}" = "registry.example/demo@sha256:abcdef" ]
+}
+
+@test "image dry-run resolves an exact version without pulling" {
+  write_versions "$(printf 'unused' | shasum -a 256 | awk '{print $1}')"
+  export MH_GITHUB_RELEASES_FILE="${FIXTURES}/stable-and-prerelease.json"
+  export MH_DRY_RUN=1
+  export MH_DOCKER_LOG="${BATS_TEST_TMPDIR}/docker.log"
+  local fake_docker="${BATS_TEST_TMPDIR}/docker"
+  printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\n" "$*" >> "${MH_DOCKER_LOG}"' 'exit 1' > "${fake_docker}"
+  chmod +x "${fake_docker}"
+  export MH_DOCKER_BIN="${fake_docker}"
+
+  mh_resolve_image demo latest
+
+  [ "${MH_IMAGE_REFERENCE}" = "registry.example/demo:1.2.0" ]
+  [ -z "${MH_IMAGE_DIGEST}" ]
+  [ ! -e "${MH_DOCKER_LOG}" ]
+}
+
+@test "image metadata can preserve an upstream tag prefix" {
+  write_versions "$(printf 'unused' | shasum -a 256 | awk '{print $1}')"
+  sed -i.bak '/compatibility:/i\
+    tag_prefix: v\
+' "${MH_COMPONENTS_DIR}/demo/versions.yaml"
+  rm -f "${MH_COMPONENTS_DIR}/demo/versions.yaml.bak"
+  export MH_DRY_RUN=1
+
+  mh_resolve_image demo 1.2.0
+
+  [ "${MH_IMAGE_REFERENCE}" = "registry.example/demo:v1.2.0" ]
+}

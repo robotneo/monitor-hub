@@ -19,7 +19,17 @@ restore uninstall validate doctor`。卸载默认保留数据；永久删除必�
 单个组件使用相同命令形式，但不需要 `--profile`：
 
 ```bash
-bin/monitorctl component victoriametrics validate --mode compose
+bin/monitorctl component victoriametrics validate --mode compose --version 1.129.0
+```
+
+组件的 `--version` 接受一个明确版本。stack 中的组件版本彼此独立，使用逗号分隔的
+`component=version` 映射；未列出的组件解析其最新稳定版。外部支撑镜像通过对应的
+`*_IMAGE` 环境变量传入明确 tag 或 digest。
+
+```bash
+bin/monitorctl stack victoriametrics-monitoring upgrade --mode compose \
+  --profile single-node \
+  --version 'victoriametrics=1.129.0,grafana=12.2.0,vmagent=1.129.0'
 ```
 
 只有元数据声明的模式可以执行。当前 stack 的 `cluster` 目录只记录设计边界。

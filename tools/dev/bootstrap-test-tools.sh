@@ -28,7 +28,7 @@ if [[ -x "${bats_dir}/bin/bats" ]]; then
 else
   mkdir -p "${tools_dir}"
   git clone --quiet --depth 1 --branch "v${BATS_VERSION}" \
-    git@github.com:bats-core/bats-core.git "${bats_dir}"
+    https://github.com/bats-core/bats-core.git "${bats_dir}"
 
   installed_commit="$(git -C "${bats_dir}" rev-parse HEAD)"
   if [[ "${installed_commit}" != "${BATS_COMMIT}" ]]; then

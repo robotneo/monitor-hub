@@ -36,7 +36,8 @@
         "required": ["name", "repository"],
         "properties": {
           "name": {"type": "string", "minLength": 1},
-          "repository": {"type": "string", "minLength": 1}
+          "repository": {"type": "string", "minLength": 1},
+          "tag_prefix": {"type": "string"}
         }
       }
     },

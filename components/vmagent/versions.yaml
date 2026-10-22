@@ -6,4 +6,5 @@ artifacts: []
 images:
   - name: vmagent
     repository: victoriametrics/vmagent
+    tag_prefix: v
 compatibility: []

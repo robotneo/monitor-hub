@@ -8,7 +8,31 @@ MH_DISPATCH_LOADED=1
 mh_metadata_supports_mode() {
   local metadata_file="$1"
   local mode="$2"
-  grep -Eq "^[[:space:]]+-[[:space:]]+${mode}[[:space:]]*$" "${metadata_file}"
+  awk -v wanted="${mode}" '
+    function trim(value) {
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
+      gsub(/^['\''"]|['\''"]$/, "", value)
+      return value
+    }
+    /^modes:[[:space:]]*\[/ {
+      line = $0
+      sub(/^modes:[[:space:]]*\[/, "", line)
+      sub(/\][[:space:]]*$/, "", line)
+      count = split(line, values, ",")
+      for (idx = 1; idx <= count; idx += 1) {
+        if (trim(values[idx]) == wanted) found = 1
+      }
+      exit
+    }
+    /^modes:[[:space:]]*$/ { in_modes = 1; next }
+    in_modes && /^[^[:space:]]/ { exit }
+    in_modes && /^[[:space:]]*-[[:space:]]*/ {
+      value = $0
+      sub(/^[[:space:]]*-[[:space:]]*/, "", value)
+      if (trim(value) == wanted) found = 1
+    }
+    END { exit(found ? 0 : 1) }
+  ' "${metadata_file}"
 }
 
 mh_stack_has_profile() {

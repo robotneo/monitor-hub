@@ -2,8 +2,8 @@
 
 [English](2026-10-21-monitor-hub-repository-design.md) | [中文](2026-10-21-monitor-hub-repository-design.zh-CN.md)
 
-**Status:** Approved conversational design; awaiting written-spec review  
-**Date:** 2026-10-21  
+**Status:** Approved; implementation and verification in progress
+**Date:** 2026-10-21
 **Repository:** `robotneo/monitor-hub`
 
 ## 1. Purpose
@@ -198,7 +198,11 @@ install configure start stop restart status
 upgrade backup restore uninstall validate doctor
 ```
 
-Common options include `--version`, `--dry-run`, `--yes`, and `--purge-data`. Destructive data deletion requires `--purge-data`; `--yes` only suppresses interaction and does not imply data deletion.
+Common options include `--version`, `--dry-run`, `--yes`, and `--purge-data`.
+For a component, `--version` accepts one exact version; for a stack, it accepts a
+comma-separated `component=version` map so one version is never applied to unlike
+components. Destructive data deletion requires `--purge-data`; `--yes` only
+suppresses interaction and does not imply data deletion.
 
 Each modifying operation follows this transaction:
 

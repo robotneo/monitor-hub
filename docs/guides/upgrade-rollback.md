@@ -7,6 +7,7 @@
 bin/monitorctl stack victoriametrics-monitoring upgrade --mode compose --profile single-node
 ```
 
-未指定版本时会先解析稳定版，再固定到 digest。若健康检查失败，停止新版本、
-恢复备份与原 digest，然后执行 `doctor`。数据库主版本升级必须遵守上游迁移顺序，
+未指定版本时会先解析稳定版，再固定到 digest。安装、配置、升级和恢复均使用事务阶段；
+若应用或健康检查失败，会恢复变更前的配置、状态、持久数据（恢复操作）与原 digest，
+然后重新启动原部署。之后执行 `doctor`。数据库主版本升级必须遵守上游迁移顺序，
 不能依赖容器回退逆转数据格式。

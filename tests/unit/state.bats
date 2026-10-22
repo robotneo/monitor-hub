@@ -51,3 +51,21 @@ setup() {
   [ ! -e "${MH_STATE_DIR}/escape.json" ]
   [ ! -e "${BATS_TEST_TMPDIR}/escape.json" ]
 }
+
+@test "image state restores immutable references without evaluating content" {
+  export DEMO_IMAGE='registry.example/demo@sha256:abcdef'
+
+  mh_state_write_images component demo DEMO_IMAGE
+  unset DEMO_IMAGE
+  mh_state_restore_images component demo
+
+  [ "${DEMO_IMAGE}" = 'registry.example/demo@sha256:abcdef' ]
+}
+
+@test "image state rejects mutable tags" {
+  export DEMO_IMAGE='registry.example/demo:latest'
+
+  run mh_state_write_images component demo DEMO_IMAGE
+
+  [ "$status" -ne 0 ]
+}

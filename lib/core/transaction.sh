@@ -86,6 +86,7 @@ mh_transaction_run_stage() {
 mh_transaction_execute() {
   local preflight="$1" resolve="$2" backup="$3" render="$4"
   local validate="$5" apply="$6" health="$7" state="$8"
+  local rollback_apply="${9:-}"
 
   mh_transaction_begin || return 1
   if ! mh_transaction_run_stage "${preflight}" || ! mh_transaction_run_stage "${resolve}"; then
@@ -112,6 +113,10 @@ mh_transaction_execute() {
     ! mh_transaction_run_stage "${health}" || \
     ! mh_transaction_run_stage "${state}"; then
     mh_transaction_rollback
+    if [[ -n "${rollback_apply}" ]]; then
+      mh_transaction_run_stage "${rollback_apply}" || \
+        printf 'automatic deployment rollback failed; use the retained backup and diagnostics for manual recovery\n' >&2
+    fi
     return 1
   fi
   mh_transaction_commit

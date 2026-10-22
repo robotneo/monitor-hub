@@ -6,4 +6,5 @@ artifacts: []
 images:
   - name: vmalert
     repository: victoriametrics/vmalert
+    tag_prefix: v
 compatibility: []

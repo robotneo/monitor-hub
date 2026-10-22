@@ -11,6 +11,7 @@ services:
       - ${MH_DATA_DIR}/stacks/hybrid-monitoring/mysql:/var/lib/mysql
       - ${MH_CONFIG_DIR}/stacks/hybrid-monitoring/secrets/mysql-root-password:/run/secrets/mysql_root_password:ro
       - ${MH_CONFIG_DIR}/stacks/hybrid-monitoring/secrets/mysql-password:/run/secrets/mysql_password:ro
+      - ${MH_CONFIG_DIR}/stacks/hybrid-monitoring/mysql-init/01-n9e.sql:/docker-entrypoint-initdb.d/01-n9e.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot --password=$$(cat /run/secrets/mysql_root_password)"]
       interval: 15s

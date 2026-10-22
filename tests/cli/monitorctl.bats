@@ -114,3 +114,24 @@ setup() {
   [ "$status" -ne 0 ]
   [[ "$output" == *"unknown profile"* ]]
 }
+
+@test "every shipped component metadata file dispatches compose mode" {
+  local component metadata
+  source "${REPO_ROOT}/lib/core/dispatch.sh"
+
+  for metadata in "${REPO_ROOT}"/components/*/component.yaml; do
+    component="$(basename "$(dirname "${metadata}")")"
+    run mh_metadata_supports_mode "${metadata}" compose
+    [ "$status" -eq 0 ]
+  done
+}
+
+@test "every shipped stack metadata file dispatches compose mode" {
+  local metadata
+  source "${REPO_ROOT}/lib/core/dispatch.sh"
+
+  for metadata in "${REPO_ROOT}"/stacks/*/stack.yaml; do
+    run mh_metadata_supports_mode "${metadata}" compose
+    [ "$status" -eq 0 ]
+  done
+}

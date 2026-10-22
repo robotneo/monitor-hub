@@ -36,6 +36,10 @@ tx_apply() {
 tx_health_ok() { record_stage health; }
 tx_health_fail() { record_stage health; return 1; }
 tx_write_state() { record_stage state; }
+tx_rollback_apply() {
+  record_stage rollback-apply
+  printf 'rollback saw: %s\n' "$(cat "${TX_CONFIG}")" >> "${TX_LOG}"
+}
 
 @test "validation failure never enters apply" {
   printf 'old config\n' > "${TX_CONFIG}"
@@ -80,4 +84,15 @@ tx_write_state() { record_stage state; }
   [ "$(printf '%s ' $(cat "${TX_LOG}"))" = "preflight resolve render validate " ]
   [ ! -e "${TX_CONFIG}" ]
   [ ! -e "${TX_STATE}" ]
+}
+
+@test "failed health runs the deployment rollback callback after files are restored" {
+  printf 'old config\n' > "${TX_CONFIG}"
+  printf '{"version":"old"}\n' > "${TX_STATE}"
+
+  run mh_transaction_execute tx_preflight tx_resolve tx_backup tx_render tx_validate_ok tx_apply tx_health_fail tx_write_state tx_rollback_apply
+
+  [ "$status" -ne 0 ]
+  run grep -F 'rollback saw: old config' "${TX_LOG}"
+  [ "$status" -eq 0 ]
 }

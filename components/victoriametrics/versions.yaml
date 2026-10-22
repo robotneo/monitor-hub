@@ -6,4 +6,5 @@ artifacts: []
 images:
   - name: victoriametrics
     repository: victoriametrics/victoria-metrics
+    tag_prefix: v
 compatibility: []

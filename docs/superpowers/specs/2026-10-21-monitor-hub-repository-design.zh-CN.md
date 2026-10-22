@@ -2,8 +2,8 @@
 
 [English](2026-10-21-monitor-hub-repository-design.md) | [中文](2026-10-21-monitor-hub-repository-design.zh-CN.md)
 
-**状态：** 对话设计已确认；等待书面规范审计  
-**日期：** 2026-10-21  
+**状态：** 已确认；正在实施和验证
+**日期：** 2026-10-21
 **仓库：** `robotneo/monitor-hub`
 
 ## 1. 目标与定位
@@ -198,7 +198,10 @@ install configure start stop restart status
 upgrade backup restore uninstall validate doctor
 ```
 
-通用选项包括 `--version`、`--dry-run`、`--yes` 和 `--purge-data`。删除数据必须明确传入 `--purge-data`；`--yes` 只用于关闭交互确认，并不代表允许删除数据。
+通用选项包括 `--version`、`--dry-run`、`--yes` 和 `--purge-data`。组件的
+`--version` 接受一个明确版本；stack 使用逗号分隔的 `component=version` 映射，
+避免把同一版本错误套用到不同组件。删除数据必须明确传入 `--purge-data`；
+`--yes` 只用于关闭交互确认，并不代表允许删除数据。
 
 每次会修改系统的操作按以下事务流程执行：
 

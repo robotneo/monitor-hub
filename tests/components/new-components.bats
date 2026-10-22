@@ -94,4 +94,7 @@ setup() {
 
   [ -f "${target_dir}/n9e.sql" ]
   [ -f "${target_dir}/config.toml.upstream" ]
+  [ -f "${target_dir}/checksums.sha256" ]
+  run bash -c 'cd "$1" && shasum -a 256 -c checksums.sha256' _ "${target_dir}"
+  [ "$status" -eq 0 ]
 }

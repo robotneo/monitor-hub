@@ -7,8 +7,12 @@ export MH_REPO_ROOT
 
 # shellcheck source=lib/core/args.sh disable=SC1091
 source "${MH_REPO_ROOT}/lib/core/args.sh"
+# shellcheck source=lib/core/paths.sh disable=SC1091
+source "${MH_REPO_ROOT}/lib/core/paths.sh"
 # shellcheck source=lib/core/dispatch.sh disable=SC1091
 source "${MH_REPO_ROOT}/lib/core/dispatch.sh"
+
+mh_init_paths
 
 mh_parse_args "$@"
 if [[ "${MH_SHOW_HELP}" == "1" ]]; then

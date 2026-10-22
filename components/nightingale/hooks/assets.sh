@@ -5,6 +5,22 @@ if [[ -n "${MH_NIGHTINGALE_ASSETS_LOADED:-}" ]]; then
 fi
 MH_NIGHTINGALE_ASSETS_LOADED=1
 
+nightingale_asset_sha256() {
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" | awk '{print $1}'
+  else
+    shasum -a 256 "$1" | awk '{print $1}'
+  fi
+}
+
+nightingale_write_asset_checksums() {
+  local target_dir="$1"
+  printf '%s  n9e.sql\n%s  config.toml.upstream\n' \
+    "$(nightingale_asset_sha256 "${target_dir}/n9e.sql")" \
+    "$(nightingale_asset_sha256 "${target_dir}/config.toml.upstream")" \
+    > "${target_dir}/checksums.sha256"
+}
+
 nightingale_download_asset() {
   local url="$1"
   local destination="$2"
@@ -54,6 +70,7 @@ nightingale_prepare_release_assets() {
     fi
     cp "${source_dir}/n9e.sql" "${sql_target}"
     cp "${source_dir}/config.toml" "${config_target}"
+    nightingale_write_asset_checksums "${target_dir}"
     return 0
   fi
 
@@ -70,4 +87,5 @@ nightingale_prepare_release_assets() {
     nightingale_download_asset \
       "${base_url}/etc/config.toml" "${config_target}" || return 1
   fi
+  nightingale_write_asset_checksums "${target_dir}"
 }

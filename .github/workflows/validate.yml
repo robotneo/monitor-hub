@@ -24,3 +24,28 @@ jobs:
         run: make validate
       - name: Test
         run: make test
+
+  rocky:
+    strategy:
+      matrix:
+        include:
+          - image: rockylinux:8.10
+            prepare: dnf module enable -y ruby:3.1
+          - image: rockylinux:9.6
+            prepare: "true"
+    runs-on: ubuntu-24.04
+    container: ${{ matrix.image }}
+    steps:
+      - name: Install test prerequisites
+        run: |
+          ${{ matrix.prepare }}
+          dnf install -y curl findutils git gzip make ruby tar
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Lint
+        run: make lint
+      - name: Validate metadata, YAML and secrets
+        run: make validate
+      - name: Test
+        run: make test

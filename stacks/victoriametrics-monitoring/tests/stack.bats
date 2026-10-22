@@ -81,3 +81,65 @@ setup() {
   [ "$status" -eq 0 ]
   [[ "$output" == *'config'* ]]
 }
+
+@test "stack dry-run never starts services or creates runtime paths" {
+  local fake_docker="${BATS_TEST_TMPDIR}/docker"
+  export MH_DOCKER_LOG="${BATS_TEST_TMPDIR}/docker.log"
+  printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\n" "$*" >> "${MH_DOCKER_LOG}"' > "${fake_docker}"
+  chmod +x "${fake_docker}"
+  export MH_DOCKER_BIN="${fake_docker}" MH_DRY_RUN=1
+  export MH_CONFIG_DIR="${BATS_TEST_TMPDIR}/config" MH_DATA_DIR="${BATS_TEST_TMPDIR}/data"
+  local digest='@sha256:0000000000000000000000000000000000000000000000000000000000000000'
+  export BLACKBOX_EXPORTER_IMAGE="registry.example/blackbox${digest}" VMWARE_EXPORTER_IMAGE="registry.example/vmware${digest}"
+  export VMAGENT_IMAGE="registry.example/vmagent${digest}" VICTORIAMETRICS_IMAGE="registry.example/victoriametrics${digest}"
+  export GRAFANA_IMAGE="registry.example/grafana${digest}" VMALERT_IMAGE="registry.example/vmalert${digest}"
+  export ALERTMANAGER_IMAGE="registry.example/alertmanager${digest}"
+
+  run "${MONITORCTL}" stack victoriametrics-monitoring install --mode compose --profile single-node --dry-run
+
+  [ "$status" -eq 0 ]
+  [ ! -e "${MH_CONFIG_DIR}" ]
+  [ ! -e "${MH_DATA_DIR}" ]
+  run grep -F 'up -d' "${MH_DOCKER_LOG}"
+  [ "$status" -ne 0 ]
+}
+
+@test "stack version map resolves each component independently" {
+  export MH_DRY_RUN=1
+  export MH_VERSION='blackbox-exporter=1.1.0,vmware-exporter=2.2.0,vmagent=3.3.0,victoriametrics=4.4.0,grafana=5.5.0,vmalert=6.6.0,alertmanager=7.7.0'
+  source "${STACK_DIR}/hooks/lifecycle.sh"
+
+  mh_stack_resolve_all_images
+
+  [ "${BLACKBOX_EXPORTER_IMAGE}" = 'quay.io/prometheus/blackbox-exporter:1.1.0' ]
+  [ "${VMWARE_EXPORTER_IMAGE}" = 'pryorda/vmware_exporter:2.2.0' ]
+  [ "${VMAGENT_IMAGE}" = 'victoriametrics/vmagent:v3.3.0' ]
+  [ "${VICTORIAMETRICS_IMAGE}" = 'victoriametrics/victoria-metrics:v4.4.0' ]
+  [ "${GRAFANA_IMAGE}" = 'grafana/grafana:5.5.0' ]
+  [ "${VMALERT_IMAGE}" = 'victoriametrics/vmalert:v6.6.0' ]
+  [ "${ALERTMANAGER_IMAGE}" = 'quay.io/prometheus/alertmanager:7.7.0' ]
+}
+
+@test "stack rejects a single version that would be applied to unlike components" {
+  export MH_DRY_RUN=1 MH_VERSION=1.2.3
+  source "${STACK_DIR}/hooks/lifecycle.sh"
+
+  run mh_stack_resolve_all_images
+
+  [ "$status" -ne 0 ]
+  [[ "$output" == *'component=version'* ]]
+}
+
+@test "unknown stack version keys fail before any image resolution" {
+  local resolution_log="${BATS_TEST_TMPDIR}/resolution.log"
+  export MH_DRY_RUN=1 MH_VERSION=unknown-component=1.2.3
+  export MH_LC_ENTITY_DIR="${STACK_DIR}" RESOLUTION_LOG="${resolution_log}"
+  source "${STACK_DIR}/hooks/lifecycle.sh"
+  mh_resolve_image() { printf 'resolved\n' >> "${RESOLUTION_LOG}"; }
+
+  run mh_stack_resolve_all_images
+
+  [ "$status" -ne 0 ]
+  [[ "$output" == *'not used by this stack'* ]]
+  [ ! -e "${resolution_log}" ]
+}

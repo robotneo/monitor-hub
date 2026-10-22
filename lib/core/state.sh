@@ -51,3 +51,52 @@ mh_state_write() {
   chmod 0600 "${temporary_path}"
   mv "${temporary_path}" "${path}"
 }
+
+mh_state_images_path() {
+  local kind="$1" name="$2" state_dir="${MH_STATE_DIR:-/var/lib/monitor-hub}"
+  if ! mh_state_validate_identifier "${kind}" || ! mh_state_validate_identifier "${name}"; then
+    printf 'invalid state identifier: %s/%s\n' "${kind}" "${name}" >&2
+    return 1
+  fi
+  printf '%s/%s/%s.images.tsv\n' "${state_dir}" "${kind}" "${name}"
+}
+
+mh_state_write_images() {
+  local kind="$1" name="$2"
+  shift 2
+  local path temporary_path variable value
+  path="$(mh_state_images_path "${kind}" "${name}")" || return 1
+  mkdir -p "$(dirname "${path}")"
+  temporary_path="${path}.tmp.$$"
+  : > "${temporary_path}"
+  for variable in "$@"; do
+    if [[ ! "${variable}" =~ ^[A-Z][A-Z0-9_]*_IMAGE$ ]]; then
+      printf 'invalid image variable in state: %s\n' "${variable}" >&2
+      rm -f "${temporary_path}"
+      return 1
+    fi
+    value="${!variable:-}"
+    if [[ "${value}" != *@sha256:* ]]; then
+      printf 'image state must use an immutable digest: %s\n' "${variable}" >&2
+      rm -f "${temporary_path}"
+      return 1
+    fi
+    printf '%s\t%s\n' "${variable}" "${value}" >> "${temporary_path}"
+  done
+  chmod 0600 "${temporary_path}"
+  mv "${temporary_path}" "${path}"
+}
+
+mh_state_restore_images() {
+  local kind="$1" name="$2" path variable value
+  path="$(mh_state_images_path "${kind}" "${name}")" || return 1
+  [[ -r "${path}" ]] || return 1
+  while IFS=$'\t' read -r variable value; do
+    if [[ ! "${variable}" =~ ^[A-Z][A-Z0-9_]*_IMAGE$ || "${value}" != *@sha256:* ]]; then
+      printf 'invalid image state entry: %s\n' "${variable}" >&2
+      return 1
+    fi
+    printf -v "${variable}" '%s' "${value}"
+    export "${variable?}"
+  done < "${path}"
+}

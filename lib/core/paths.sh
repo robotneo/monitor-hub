@@ -17,11 +17,12 @@ mh_rooted_path() {
 }
 
 mh_init_paths() {
-  MH_CONFIG_DIR="$(mh_rooted_path /etc/monitor-hub)"
-  MH_STATE_DIR="$(mh_rooted_path /var/lib/monitor-hub)"
-  MH_CACHE_DIR="$(mh_rooted_path /var/cache/monitor-hub)"
-  MH_LOG_DIR="$(mh_rooted_path /var/log/monitor-hub)"
-  MH_BACKUP_DIR="$(mh_rooted_path /var/backups/monitor-hub)"
+  MH_CONFIG_DIR="${MH_CONFIG_DIR:-$(mh_rooted_path /etc/monitor-hub)}"
+  MH_DATA_DIR="${MH_DATA_DIR:-$(mh_rooted_path /var/lib/monitor-hub)}"
+  MH_STATE_DIR="${MH_STATE_DIR:-${MH_DATA_DIR}}"
+  MH_CACHE_DIR="${MH_CACHE_DIR:-$(mh_rooted_path /var/cache/monitor-hub)}"
+  MH_LOG_DIR="${MH_LOG_DIR:-$(mh_rooted_path /var/log/monitor-hub)}"
+  MH_BACKUP_DIR="${MH_BACKUP_DIR:-$(mh_rooted_path /var/backups/monitor-hub)}"
 
-  export MH_CONFIG_DIR MH_STATE_DIR MH_CACHE_DIR MH_LOG_DIR MH_BACKUP_DIR
+  export MH_CONFIG_DIR MH_DATA_DIR MH_STATE_DIR MH_CACHE_DIR MH_LOG_DIR MH_BACKUP_DIR
 }
